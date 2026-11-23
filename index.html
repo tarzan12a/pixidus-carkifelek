@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pixidus Çarkıfelek - TV Şov & Yapay Zeka</title>
   
-  <!-- Tailwind CSS & Lucide Icons -->
+  <!-- Tailwind CSS, Lucide Icons, Confetti & Google Identity Services -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <script>
     tailwind.config = {
@@ -157,9 +158,15 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <span id="ai-mode-badge" class="hidden sm:inline-flex items-center gap-1 text-xs bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl border border-slate-700">
+        <span id="ai-mode-badge" class="hidden md:inline-flex items-center gap-1 text-xs bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl border border-slate-700">
           <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Yerel Mod
         </span>
+
+        <button id="btn-open-auth" class="py-2 px-3 bg-gradient-to-r from-purple-600/40 to-pink-600/40 hover:from-purple-600/60 hover:to-pink-600/60 border border-pink-500/40 rounded-xl text-xs sm:text-sm font-bold text-white flex items-center gap-2 transition cursor-pointer">
+          <img id="header-user-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=GuestPixidus" alt="Profil" class="w-5 h-5 rounded-full bg-slate-800">
+          <span id="header-user-label">Giriş Yap</span>
+        </button>
+
         <button id="btn-toggle-tts" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-emerald-400 transition cursor-pointer" title="Sunucu Seslendirmesi Aç/Kapat">
           <i data-lucide="volume-2" class="w-5 h-5"></i>
         </button>
@@ -269,6 +276,96 @@
     </div>
   </div>
 
+  <!-- ÜYELİK / PROFİL MODALI -->
+  <div id="modal-auth" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-xl font-black text-amber-400 flex items-center gap-2">
+          <i data-lucide="user-check" class="w-6 h-6"></i>
+          <span id="auth-modal-title">Üyelik & Giriş</span>
+        </h3>
+        <button id="btn-close-auth" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-6 h-6"></i></button>
+      </div>
+
+      <!-- GİRİŞ YAPILMIŞ PROFİL GÖRÜNÜMÜ -->
+      <div id="auth-profile-view" class="hidden space-y-4">
+        <div class="flex items-center gap-4 bg-slate-800/70 p-4 rounded-2xl border border-slate-700">
+          <img id="profile-view-avatar" src="" alt="Avatar" class="w-16 h-16 rounded-full border-2 border-amber-400 bg-slate-900">
+          <div class="flex-1 min-w-0">
+            <h4 id="profile-view-name" class="text-lg font-black text-white truncate"></h4>
+            <p id="profile-view-email" class="text-xs text-slate-400 truncate"></p>
+            <span id="profile-view-provider" class="inline-block mt-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-purple-900/70 text-purple-300 border border-purple-700"></span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60">
+            <span id="stat-games-played" class="text-lg font-black text-amber-400 block">0</span>
+            <span class="text-[11px] text-slate-400">Yarışma</span>
+          </div>
+          <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60">
+            <span id="stat-total-score" class="text-lg font-black text-emerald-400 block">0</span>
+            <span class="text-[11px] text-slate-400">Toplam Puan</span>
+          </div>
+          <div class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60">
+            <span id="stat-best-score" class="text-lg font-black text-pink-400 block">0</span>
+            <span class="text-[11px] text-slate-400">Rekor Tur</span>
+          </div>
+        </div>
+
+        <button id="btn-logout" class="w-full py-3 bg-rose-600/20 hover:bg-rose-600/35 border border-rose-500/40 text-rose-200 font-bold rounded-xl transition flex items-center justify-center gap-2 cursor-pointer">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Çıkış Yap
+        </button>
+      </div>
+
+      <!-- GİRİŞ / KAYIT FORM GÖRÜNÜMÜ -->
+      <div id="auth-form-view" class="space-y-4">
+        <div class="grid grid-cols-2 gap-2 bg-slate-800/80 p-1 rounded-xl border border-slate-700">
+          <button id="tab-auth-login" class="py-2 rounded-lg text-xs font-black bg-amber-500 text-slate-950 cursor-pointer transition">Giriş Yap</button>
+          <button id="tab-auth-register" class="py-2 rounded-lg text-xs font-bold text-slate-300 hover:text-white cursor-pointer transition">Üye Ol</button>
+        </div>
+
+        <p id="auth-feedback" class="text-xs font-semibold hidden px-3 py-2 rounded-xl"></p>
+
+        <div id="field-auth-name" class="hidden">
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Ad Soyad / Yarışmacı Adı</label>
+          <input type="text" id="input-auth-name" placeholder="Örn: Deniz Yılmaz" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">E-posta Adresi</label>
+          <input type="email" id="input-auth-email" placeholder="ornek@eposta.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Şifre</label>
+          <input type="password" id="input-auth-password" placeholder="En az 6 karakter" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400">
+        </div>
+
+        <button id="btn-submit-email-auth" class="w-full py-3 bg-gradient-to-r from-amber-500 to-pink-600 hover:from-amber-400 hover:to-pink-500 text-white font-black rounded-xl shadow-lg transition cursor-pointer">
+          E-posta ile Giriş Yap
+        </button>
+
+        <div class="relative flex items-center py-1">
+          <div class="flex-grow border-t border-slate-800"></div>
+          <span class="flex-shrink mx-3 text-[11px] text-slate-500 uppercase">veya</span>
+          <div class="flex-grow border-t border-slate-800"></div>
+        </div>
+
+        <!-- GOOGLE İLE GİRİŞ BUTONU -->
+        <button id="btn-google-signin" class="w-full py-3 bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-sm rounded-xl shadow flex items-center justify-center gap-2.5 transition cursor-pointer">
+          <svg class="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.54-1.14 2.85-2.4 3.72v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96z"/>
+          </svg>
+          Google ile Giriş Yap
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- TAHMİN ET MODALI -->
   <div id="modal-solve" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
@@ -286,7 +383,7 @@
 
   <!-- AYARLAR MODALI -->
   <div id="modal-settings" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-5">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="text-xl font-black text-amber-400 flex items-center gap-2">
           <i data-lucide="settings" class="w-6 h-6"></i> Oyun Ayarları
@@ -331,6 +428,11 @@
           <input type="password" id="input-api-key" placeholder="AIzaSy... (Boş bırakılırsa yerel havuz kullanılır)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
         </div>
 
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Google OAuth Client ID (Opsiyonel)</label>
+          <input type="text" id="input-google-client-id" placeholder="xxxx.apps.googleusercontent.com (Boşsa hızlı Google girişi açılır)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+        </div>
+
         <div class="flex items-center justify-between pt-2 border-t border-slate-800">
           <span class="text-sm font-semibold text-slate-300">Ses Efektleri</span>
           <input type="checkbox" id="chk-sfx" checked class="w-5 h-5 accent-amber-500 cursor-pointer">
@@ -366,7 +468,9 @@
   <script>
     /* ==================== SABİTLER VE VERİ HAVUZU ==================== */
     const VOWELS = "AEIİOÖUÜ";
-    const CONSONANTS = "BCÇDFGĞHJKLMNPRSŞTVYZ";
+    const STORAGE_USERS_KEY = "pixidus_users_v1";
+    const STORAGE_SESSION_KEY = "pixidus_session_v1";
+    const STORAGE_GOOGLE_CID_KEY = "pixidus_google_cid_v1";
 
     const JINGLE_LYRICS = [
       { time: 0, lyric: "Çark dönüyor, ışık yanıyor!", subtitle: "ŞOV BAŞLIYOR!" },
@@ -410,11 +514,13 @@
       aiProvider: "gemini", // "gemini" | "grok"
       grokModel: "grok-3-mini",
       apiKey: "",
+      googleClientId: localStorage.getItem(STORAGE_GOOGLE_CID_KEY) || "",
       sfx: true,
       tts: true,
+      currentUser: null,
       players: [
-        { name: "Siz", score: 0, total: 0, isAi: false },
-        { name: "Pixi-AI", score: 0, total: 0, isAi: true }
+        { name: "Siz", score: 0, total: 0, isAi: false, avatar: "https://api.dicebear.com/7.x/adventurer/svg?seed=GuestPixidus" },
+        { name: "Pixi-AI", score: 0, total: 0, isAi: true, avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=PixiAI" }
       ],
       activePlayerIndex: 0,
       currentRound: 1,
@@ -425,8 +531,207 @@
       guessedLetters: new Set(),
       wheelValue: null,
       isSpinning: false,
-      guessMode: "none" // "none" | "consonant" | "vowel"
+      guessMode: "none"
     };
+
+    /* ==================== ÜYELİK & KİMLİK DOĞRULAMA YÖNETİMİ ==================== */
+    async function hashPassword(password) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function getUsers() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_USERS_KEY) || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(STORAGE_USERS_KEY, JSON.stringify(users));
+    }
+
+    function parseJwt(token) {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const jsonPayload = decodeURIComponent(atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join(""));
+      return JSON.parse(jsonPayload);
+    }
+
+    function setCurrentUserSession(userObj) {
+      gameState.currentUser = userObj;
+      if (userObj) {
+        localStorage.setItem(STORAGE_SESSION_KEY, userObj.email);
+        gameState.players[0].name = userObj.name;
+        gameState.players[0].avatar = userObj.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(userObj.email)}`;
+        document.getElementById("input-player-name").value = userObj.name;
+      } else {
+        localStorage.removeItem(STORAGE_SESSION_KEY);
+        gameState.players[0].name = "Siz";
+        gameState.players[0].avatar = "https://api.dicebear.com/7.x/adventurer/svg?seed=GuestPixidus";
+        document.getElementById("input-player-name").value = "Siz";
+      }
+      updateAuthUI();
+      updateUI();
+    }
+
+    function restoreUserSession() {
+      const savedEmail = localStorage.getItem(STORAGE_SESSION_KEY);
+      if (!savedEmail) {
+        updateAuthUI();
+        return;
+      }
+      const users = getUsers();
+      const found = users.find(u => u.email.toLowerCase() === savedEmail.toLowerCase());
+      if (found) {
+        setCurrentUserSession(found);
+      } else {
+        updateAuthUI();
+      }
+    }
+
+    function recordGameStatsForUser(finalTotalScore) {
+      if (!gameState.currentUser) return;
+      const users = getUsers();
+      const idx = users.findIndex(u => u.email.toLowerCase() === gameState.currentUser.email.toLowerCase());
+      if (idx !== -1) {
+        users[idx].stats = users[idx].stats || { gamesPlayed: 0, totalPoints: 0, bestScore: 0 };
+        users[idx].stats.gamesPlayed += 1;
+        users[idx].stats.totalPoints += finalTotalScore;
+        users[idx].stats.bestScore = Math.max(users[idx].stats.bestScore, finalTotalScore);
+        saveUsers(users);
+        setCurrentUserSession(users[idx]);
+      }
+    }
+
+    function updateAuthUI() {
+      const labelEl = document.getElementById("header-user-label");
+      const avatarEl = document.getElementById("header-user-avatar");
+      const profileView = document.getElementById("auth-profile-view");
+      const formView = document.getElementById("auth-form-view");
+      const titleEl = document.getElementById("auth-modal-title");
+
+      if (gameState.currentUser) {
+        const u = gameState.currentUser;
+        labelEl.textContent = u.name;
+        avatarEl.src = u.avatar;
+        profileView.classList.remove("hidden");
+        formView.classList.add("hidden");
+        titleEl.textContent = "Üye Profili";
+
+        document.getElementById("profile-view-avatar").src = u.avatar;
+        document.getElementById("profile-view-name").textContent = u.name;
+        document.getElementById("profile-view-email").textContent = u.email;
+        document.getElementById("profile-view-provider").textContent = u.provider === "google" ? "Google Hesabı" : "E-posta Üyeliği";
+
+        const stats = u.stats || { gamesPlayed: 0, totalPoints: 0, bestScore: 0 };
+        document.getElementById("stat-games-played").textContent = stats.gamesPlayed;
+        document.getElementById("stat-total-score").textContent = stats.totalPoints;
+        document.getElementById("stat-best-score").textContent = stats.bestScore;
+      } else {
+        labelEl.textContent = "Giriş Yap";
+        avatarEl.src = "https://api.dicebear.com/7.x/adventurer/svg?seed=GuestPixidus";
+        profileView.classList.add("hidden");
+        formView.classList.remove("hidden");
+        titleEl.textContent = "Üyelik & Giriş";
+      }
+    }
+
+    let authMode = "login"; // "login" | "register"
+    function setAuthTab(mode) {
+      authMode = mode;
+      const tabLogin = document.getElementById("tab-auth-login");
+      const tabRegister = document.getElementById("tab-auth-register");
+      const nameField = document.getElementById("field-auth-name");
+      const submitBtn = document.getElementById("btn-submit-email-auth");
+      const feedback = document.getElementById("auth-feedback");
+      feedback.classList.add("hidden");
+
+      if (mode === "login") {
+        tabLogin.className = "py-2 rounded-lg text-xs font-black bg-amber-500 text-slate-950 cursor-pointer transition";
+        tabRegister.className = "py-2 rounded-lg text-xs font-bold text-slate-300 hover:text-white cursor-pointer transition";
+        nameField.classList.add("hidden");
+        submitBtn.textContent = "E-posta ile Giriş Yap";
+      } else {
+        tabRegister.className = "py-2 rounded-lg text-xs font-black bg-amber-500 text-slate-950 cursor-pointer transition";
+        tabLogin.className = "py-2 rounded-lg text-xs font-bold text-slate-300 hover:text-white cursor-pointer transition";
+        nameField.classList.remove("hidden");
+        submitBtn.textContent = "Üyeliği Tamamla";
+      }
+    }
+
+    function showAuthFeedback(msg, isError = true) {
+      const el = document.getElementById("auth-feedback");
+      el.textContent = msg;
+      el.className = `text-xs font-semibold px-3 py-2 rounded-xl border ${
+        isError
+          ? "bg-rose-500/15 text-rose-300 border-rose-500/40"
+          : "bg-emerald-500/15 text-emerald-300 border-emerald-500/40"
+      }`;
+      el.classList.remove("hidden");
+    }
+
+    function completeGoogleSignIn({ name, email, picture }) {
+      const cleanEmail = email.trim().toLowerCase();
+      const users = getUsers();
+      let user = users.find(u => u.email.toLowerCase() === cleanEmail);
+
+      if (!user) {
+        user = {
+          id: "g_" + Date.now(),
+          name: name.trim(),
+          email: cleanEmail,
+          provider: "google",
+          avatar: picture || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(cleanEmail)}`,
+          stats: { gamesPlayed: 0, totalPoints: 0, bestScore: 0 }
+        };
+        users.push(user);
+      } else {
+        user.name = name.trim() || user.name;
+        if (picture) user.avatar = picture;
+        user.provider = "google";
+      }
+
+      saveUsers(users);
+      setCurrentUserSession(user);
+      document.getElementById("modal-auth").classList.add("hidden");
+      setHostSpeech(`Hoş geldiniz ${user.name}! Google hesabınızla giriş yapıldı.`);
+    }
+
+    function triggerGoogleSignIn() {
+      if (gameState.googleClientId && window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: gameState.googleClientId,
+          callback: (response) => {
+            try {
+              const payload = parseJwt(response.credential);
+              completeGoogleSignIn({
+                name: payload.name || payload.given_name || "Google Oyuncusu",
+                email: payload.email,
+                picture: payload.picture
+              });
+            } catch (err) {
+              showAuthFeedback("Google kimlik bilgisi okunamadı.");
+            }
+          }
+        });
+        window.google.accounts.id.prompt();
+        return;
+      }
+
+      // Client ID tanımlı değilse anında test edilebilir Google hesabı oluştur/giriş yap
+      const presetEmail = document.getElementById("input-auth-email").value.trim();
+      const email = presetEmail && presetEmail.includes("@") ? presetEmail : "oyuncu.google@gmail.com";
+      const derivedName = email.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, c => c.toLocaleUpperCase("tr-TR"));
+      completeGoogleSignIn({
+        name: derivedName || "Google Yarışmacısı",
+        email,
+        picture: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(email)}`
+      });
+    }
 
     /* ==================== TÜRKÇE BÜYÜK HARF YARDIMCISI ==================== */
     function toTrUpper(str) {
@@ -926,6 +1231,8 @@
     }
 
     function showGameOver() {
+      recordGameStatsForUser(gameState.players[0].total);
+
       const sorted = [...gameState.players].sort((a, b) => b.total - a.total);
       const winner = sorted[0];
       const isTie = sorted[0].total === sorted[1].total;
@@ -1004,13 +1311,13 @@
       const aiBadge = document.getElementById('ai-mode-badge');
       if (!gameState.apiKey) {
         aiBadge.innerHTML = `<i data-lucide="cpu" class="w-3.5 h-3.5"></i> Yerel Mod`;
-        aiBadge.className = "hidden sm:inline-flex items-center gap-1 text-xs bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl border border-slate-700";
+        aiBadge.className = "hidden md:inline-flex items-center gap-1 text-xs bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl border border-slate-700";
       } else if (gameState.aiProvider === 'grok') {
         aiBadge.innerHTML = `<i data-lucide="zap" class="w-3.5 h-3.5 text-pink-400"></i> Grok AI Aktif`;
-        aiBadge.className = "hidden sm:inline-flex items-center gap-1 text-xs bg-pink-500/10 text-pink-300 px-3 py-1.5 rounded-xl border border-pink-500/40";
+        aiBadge.className = "hidden md:inline-flex items-center gap-1 text-xs bg-pink-500/10 text-pink-300 px-3 py-1.5 rounded-xl border border-pink-500/40";
       } else {
         aiBadge.innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> Gemini AI Aktif`;
-        aiBadge.className = "hidden sm:inline-flex items-center gap-1 text-xs bg-amber-500/10 text-amber-300 px-3 py-1.5 rounded-xl border border-amber-500/40";
+        aiBadge.className = "hidden md:inline-flex items-center gap-1 text-xs bg-amber-500/10 text-amber-300 px-3 py-1.5 rounded-xl border border-amber-500/40";
       }
       lucide.createIcons();
     }
@@ -1041,7 +1348,7 @@
         card.className = `p-3 rounded-xl border flex items-center justify-between transition ${isActive ? 'bg-gradient-to-r from-purple-900/60 to-slate-900 border-amber-400 shadow-lg' : 'bg-slate-800/40 border-slate-700/50 opacity-70'}`;
         card.innerHTML = `
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-full ${isActive ? 'bg-amber-400 text-slate-950 font-black' : 'bg-slate-700 text-slate-300'} flex items-center justify-center text-xs">${idx + 1}</div>
+            <img src="${p.avatar}" alt="${p.name}" class="w-9 h-9 rounded-full ${isActive ? 'ring-2 ring-amber-400' : 'ring-1 ring-slate-600'} bg-slate-800 object-cover">
             <div>
               <p class="font-bold text-sm ${isActive ? 'text-amber-300' : 'text-slate-300'}">${p.name}</p>
               <p class="text-[11px] text-slate-400">Tur Kasası: ${p.score} p</p>
@@ -1091,6 +1398,79 @@
     }
 
     /* ==================== OLAY DİNLEYİCİLERİ ==================== */
+    document.getElementById('btn-open-auth').addEventListener('click', () => {
+      updateAuthUI();
+      document.getElementById('modal-auth').classList.remove('hidden');
+    });
+    document.getElementById('btn-close-auth').addEventListener('click', () => {
+      document.getElementById('modal-auth').classList.add('hidden');
+    });
+    document.getElementById('tab-auth-login').addEventListener('click', () => setAuthTab('login'));
+    document.getElementById('tab-auth-register').addEventListener('click', () => setAuthTab('register'));
+
+    document.getElementById('btn-submit-email-auth').addEventListener('click', async () => {
+      const nameInput = document.getElementById('input-auth-name').value.trim();
+      const emailInput = document.getElementById('input-auth-email').value.trim().toLowerCase();
+      const passwordInput = document.getElementById('input-auth-password').value;
+
+      if (!emailInput || !emailInput.includes("@")) {
+        showAuthFeedback("Lütfen geçerli bir e-posta adresi girin.");
+        return;
+      }
+      if (!passwordInput || passwordInput.length < 6) {
+        showAuthFeedback("Şifre en az 6 karakter olmalıdır.");
+        return;
+      }
+
+      const passHash = await hashPassword(passwordInput);
+      const users = getUsers();
+
+      if (authMode === "register") {
+        if (!nameInput) {
+          showAuthFeedback("Lütfen adınızı veya yarışmacı adınızı girin.");
+          return;
+        }
+        if (users.some(u => u.email.toLowerCase() === emailInput)) {
+          showAuthFeedback("Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.");
+          return;
+        }
+        const newUser = {
+          id: "u_" + Date.now(),
+          name: nameInput,
+          email: emailInput,
+          passwordHash: passHash,
+          provider: "email",
+          avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(emailInput)}`,
+          stats: { gamesPlayed: 0, totalPoints: 0, bestScore: 0 }
+        };
+        users.push(newUser);
+        saveUsers(users);
+        setCurrentUserSession(newUser);
+        document.getElementById("modal-auth").classList.add("hidden");
+        setHostSpeech(`Aramıza hoş geldiniz ${newUser.name}! Üyeliğiniz oluşturuldu.`);
+      } else {
+        const existing = users.find(u => u.email.toLowerCase() === emailInput);
+        if (!existing) {
+          showAuthFeedback("Bu e-posta ile kayıtlı hesap bulunamadı. 'Üye Ol' sekmesinden kayıt olabilirsiniz.");
+          return;
+        }
+        if (existing.passwordHash && existing.passwordHash !== passHash) {
+          showAuthFeedback("E-posta veya şifre hatalı.");
+          return;
+        }
+        setCurrentUserSession(existing);
+        document.getElementById("modal-auth").classList.add("hidden");
+        setHostSpeech(`Tekrar hoş geldiniz ${existing.name}!`);
+      }
+    });
+
+    document.getElementById('btn-google-signin').addEventListener('click', triggerGoogleSignIn);
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      setCurrentUserSession(null);
+      setHostSpeech("Çıkış yapıldı. Misafir yarışmacı olarak devam edebilirsiniz.");
+    });
+
     document.getElementById('btn-spin-wheel').addEventListener('click', spinWheel);
 
     document.getElementById('btn-toggle-tts').addEventListener('click', (e) => {
@@ -1141,11 +1521,16 @@
     });
 
     window.addEventListener('keydown', (e) => {
+      const isModalOpen =
+        !document.getElementById('modal-solve').classList.contains('hidden') ||
+        !document.getElementById('modal-settings').classList.contains('hidden') ||
+        !document.getElementById('modal-auth').classList.contains('hidden');
+
       if (!document.getElementById('modal-solve').classList.contains('hidden')) {
         if (e.key === 'Enter') document.getElementById('btn-confirm-solve').click();
         return;
       }
-      if (!document.getElementById('modal-settings').classList.contains('hidden')) return;
+      if (isModalOpen) return;
 
       const key = toTrUpper(e.key);
       if ("ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".includes(key) && key.length === 1) {
@@ -1157,6 +1542,7 @@
 
     document.getElementById('btn-open-settings').addEventListener('click', () => {
       updateProviderFormUI();
+      document.getElementById('input-google-client-id').value = gameState.googleClientId;
       document.getElementById('modal-settings').classList.remove('hidden');
     });
     document.getElementById('btn-close-settings').addEventListener('click', () => document.getElementById('modal-settings').classList.add('hidden'));
@@ -1164,12 +1550,27 @@
       gameState.aiProvider = document.getElementById('select-ai-provider').value;
       gameState.grokModel = document.getElementById('select-grok-model').value;
       gameState.apiKey = document.getElementById('input-api-key').value.trim();
+      gameState.googleClientId = document.getElementById('input-google-client-id').value.trim();
+      localStorage.setItem(STORAGE_GOOGLE_CID_KEY, gameState.googleClientId);
+
       gameState.sfx = document.getElementById('chk-sfx').checked;
       gameState.tts = document.getElementById('chk-tts').checked;
       gameState.maxRounds = parseInt(document.getElementById('select-max-rounds').value, 10);
 
       const customName = document.getElementById('input-player-name').value.trim();
-      if (customName) gameState.players[0].name = customName;
+      if (customName) {
+        gameState.players[0].name = customName;
+        if (gameState.currentUser) {
+          gameState.currentUser.name = customName;
+          const users = getUsers();
+          const uIdx = users.findIndex(u => u.email === gameState.currentUser.email);
+          if (uIdx !== -1) {
+            users[uIdx].name = customName;
+            saveUsers(users);
+          }
+          updateAuthUI();
+        }
+      }
 
       updateAiBadge();
       updateUI();
@@ -1185,6 +1586,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
+      restoreUserSession();
       updateAiBadge();
       drawWheel();
     });

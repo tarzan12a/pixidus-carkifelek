@@ -10,30 +10,6 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-  <!-- Google Tag Manager (GTM-MF35KSRF) -->
-  <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-MF35KSRF"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-  </script>
-
-  <!-- Google Tag Manager (GTM-N9F35HPW) -->
-  <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-N9F35HPW"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-  </script>
-
-  <!-- Google Analytics / Tag (G-823FH94467) -->
-  <script async src="https://www.googletagmanager.com/gtm.js?id=G-823FH94467"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-  </script>
-
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -97,7 +73,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col overflow-x-hidden relative">
 
-  <!-- MP3 AUDIO ELEMENT (Yerel MP3 için) -->
+  <!-- MP3 AUDIO ELEMENT -->
   <audio id="custom-mp3-player" preload="auto"></audio>
 
   <!-- ==================== AÇILIŞ VE JENERİK ANİMASYONU ==================== -->
@@ -107,7 +83,6 @@
       <div class="absolute -top-40 -right-20 w-96 h-[800px] bg-gradient-to-b from-amber-500/30 via-purple-500/10 to-transparent blur-3xl animate-spotlight" style="animation-delay: -1.5s;"></div>
     </div>
 
-    <!-- Başlat Butonu Sahnesi -->
     <div id="intro-start-screen" class="text-center z-10 space-y-6 max-w-lg">
       <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-tr from-purple-600 via-pink-500 to-amber-400 p-1 animate-pulse">
         <div class="w-full h-full bg-slate-900 rounded-full flex items-center justify-center">
@@ -121,7 +96,6 @@
         <p class="text-xl md:text-2xl font-bold text-amber-400 tracking-widest mt-1">ÇARKIFELEK</p>
       </div>
 
-      <!-- KENDİ MP3 DOSYANI SEÇ ALANI -->
       <div class="bg-slate-900/90 border border-slate-700/80 p-4 rounded-2xl shadow-xl space-y-3">
         <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider">
           <i data-lucide="upload" class="w-4 h-4 inline mr-1"></i> Jenerik MP3 Dosyanızı Seçin
@@ -131,7 +105,7 @@
           <i data-lucide="music" class="w-4 h-4 text-pink-400"></i>
           <span id="mp3-file-name">Kendi MP3 Dosyanızı Yükleyin (Örn: jenerik.mp3)</span>
         </button>
-        <p class="text-[11px] text-slate-400">Dosya seçilmezse dahili jenerik müziği çalınır.</p>
+        <p class="text-[11px] text-slate-400">Dosya seçilmezse dahili sintezleyici jenerik müziği çalınır.</p>
       </div>
 
       <button id="btn-start-show" class="w-full py-4 px-8 bg-gradient-to-r from-amber-500 via-pink-600 to-purple-600 hover:from-amber-400 hover:via-pink-500 hover:to-purple-500 text-white font-black text-xl rounded-2xl shadow-2xl shadow-pink-500/40 transform hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 cursor-pointer">
@@ -140,7 +114,6 @@
       </button>
     </div>
 
-    <!-- Jenerik Sahnesi -->
     <div id="intro-animation-screen" class="hidden text-center z-10 space-y-8 max-w-xl">
       <div class="relative w-48 h-48 mx-auto">
         <div class="absolute inset-0 rounded-full bg-gradient-to-r from-amber-500 via-pink-500 to-purple-600 animate-spin-slow blur-md"></div>
@@ -151,7 +124,7 @@
 
       <div class="space-y-3">
         <h2 id="intro-subtitle" class="text-2xl md:text-4xl font-extrabold text-amber-300 tracking-wide animate-pulse">
-          ŞARK DÖNÜYOR, IŞIK YANIYOR...
+          ÇARK DÖNÜYOR, IŞIK YANIYOR...
         </h2>
         <p id="intro-lyric" class="text-lg md:text-xl text-pink-200 font-semibold italic min-h-[3rem] transition-all duration-500">
           "Kanalda şov başlıyor!"
@@ -184,7 +157,13 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <button id="btn-replay-jingle" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-amber-400 transition cursor-pointer" title="Müziği Başlat / Durdur">
+        <span id="ai-mode-badge" class="hidden sm:inline-flex items-center gap-1 text-xs bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl border border-slate-700">
+          <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Yerel Mod
+        </span>
+        <button id="btn-toggle-tts" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-emerald-400 transition cursor-pointer" title="Sunucu Seslendirmesi Aç/Kapat">
+          <i data-lucide="volume-2" class="w-5 h-5"></i>
+        </button>
+        <button id="btn-replay-jingle" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-amber-400 transition cursor-pointer" title="Jenerik Müziği Başlat / Durdur">
           <i data-lucide="music" class="w-5 h-5"></i>
         </button>
         <button id="btn-open-settings" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 text-slate-200 transition cursor-pointer" title="Ayarlar">
@@ -204,7 +183,7 @@
       <div class="flex-1">
         <div class="flex items-center gap-2">
           <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Sunucu (Pixidus AI)</span>
-          <span class="text-[10px] bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full border border-purple-700">Canlı Bağlantı</span>
+          <span class="text-[10px] bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-full border border-purple-700">Canlı Yayın</span>
         </div>
         <p id="host-speech" class="text-sm sm:text-base font-semibold text-slate-100 mt-0.5">
           "Hoş geldiniz hanımlar beyler! Çarkıfelek heyecanı başlıyor!"
@@ -236,6 +215,10 @@
               "Kelime yükleniyor..."
             </p>
           </div>
+          <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+            <span>Kural:</span>
+            <span class="text-amber-300 font-semibold">Önce Çark → Sessiz Harf</span>
+          </div>
         </div>
       </div>
 
@@ -256,7 +239,12 @@
             </button>
           </div>
 
-          <div id="keyboard-container" class="grid grid-cols-8 sm:grid-cols-10 gap-1 sm:gap-1.5 pt-2"></div>
+          <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
+            <span><span class="inline-block w-2 h-2 rounded-full bg-indigo-400 mr-1"></span>Sesli Harfler (Satın Alınır)</span>
+            <span><span class="inline-block w-2 h-2 rounded-full bg-slate-500 mr-1"></span>Sessiz Harfler (Çark Sonrası)</span>
+          </div>
+
+          <div id="keyboard-container" class="grid grid-cols-8 sm:grid-cols-10 gap-1 sm:gap-1.5 pt-1"></div>
         </div>
       </div>
 
@@ -273,16 +261,15 @@
           </div>
         </div>
 
-        <button id="btn-spin-wheel" class="w-full mt-4 py-4 bg-gradient-to-r from-amber-500 via-pink-600 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-black text-xl rounded-2xl shadow-xl shadow-pink-500/20 transform hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+        <button id="btn-spin-wheel" class="w-full mt-4 py-4 bg-gradient-to-r from-amber-500 via-pink-600 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-black text-xl rounded-2xl shadow-xl shadow-pink-500/20 transform hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
           <i data-lucide="rotate-cw" class="w-6 h-6"></i>
           ÇARKI ÇEVİR
         </button>
       </div>
-
     </div>
   </div>
 
-  <!-- MODALS -->
+  <!-- TAHMİN ET MODALI -->
   <div id="modal-solve" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
       <h3 class="text-xl font-black text-amber-400 flex items-center gap-2">
@@ -297,6 +284,7 @@
     </div>
   </div>
 
+  <!-- AYARLAR MODALI -->
   <div id="modal-settings" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-5">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -306,13 +294,31 @@
         <button id="btn-close-settings" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-6 h-6"></i></button>
       </div>
       <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Yarışmacı Adınız</label>
+            <input type="text" id="input-player-name" value="Siz" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Toplam Tur Sayısı</label>
+            <select id="select-max-rounds" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+              <option value="2">2 Tur</option>
+              <option value="3" selected>3 Tur</option>
+              <option value="5">5 Tur</option>
+            </select>
+          </div>
+        </div>
         <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Gemini API Key (Opsiyonel)</label>
-          <input type="password" id="input-api-key" placeholder="AI Studio Key girebilirsiniz" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Gemini API Key (Dinamik Soru Üretimi İçin)</label>
+          <input type="password" id="input-api-key" placeholder="AIzaSy... (Boş bırakılırsa yerel havuz kullanılır)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
         </div>
         <div class="flex items-center justify-between pt-2 border-t border-slate-800">
           <span class="text-sm font-semibold text-slate-300">Ses Efektleri</span>
           <input type="checkbox" id="chk-sfx" checked class="w-5 h-5 accent-amber-500 cursor-pointer">
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-semibold text-slate-300">Sunucu Sesli Okuma (TTS)</span>
+          <input type="checkbox" id="chk-tts" checked class="w-5 h-5 accent-amber-500 cursor-pointer">
         </div>
       </div>
       <button id="btn-save-settings" class="w-full py-3 bg-gradient-to-r from-amber-500 to-pink-600 text-white font-black rounded-xl shadow-lg cursor-pointer">
@@ -321,64 +327,70 @@
     </div>
   </div>
 
+  <!-- OYUN SONU ŞAMPİYONLUK MODALI -->
+  <div id="modal-gameover" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border-2 border-amber-400/60 rounded-3xl p-8 max-w-md w-full shadow-2xl text-center space-y-6">
+      <div class="w-20 h-20 mx-auto rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center">
+        <i data-lucide="trophy" class="w-10 h-10 text-amber-400"></i>
+      </div>
+      <div>
+        <span class="text-xs font-bold uppercase tracking-widest text-pink-400">Büyük Final Tamamlandı</span>
+        <h2 id="winner-title" class="text-3xl font-black text-white mt-1">KAZANAN: SİZ!</h2>
+      </div>
+      <div id="final-scoreboard" class="bg-slate-800/70 rounded-2xl p-4 space-y-2 text-left border border-slate-700"></div>
+      <button id="btn-restart-game" class="w-full py-4 bg-gradient-to-r from-amber-500 via-pink-600 to-purple-600 text-white font-black text-lg rounded-2xl shadow-xl hover:scale-[1.02] transition cursor-pointer">
+        YENİ YARIŞMA BAŞLAT
+      </button>
+    </div>
+  </div>
+
   <script>
-    /* ==================== MP3 SEÇİMİ VE YÜKLEME ==================== */
-    const customPlayer = document.getElementById('custom-mp3-player');
-    const inputMp3File = document.getElementById('input-mp3-file');
-    const btnSelectMp3 = document.getElementById('btn-select-mp3');
-    const mp3FileName = document.getElementById('mp3-file-name');
-    let hasCustomMp3 = false;
+    /* ==================== SABİTLER VE VERİ HAVUZU ==================== */
+    const VOWELS = "AEIİOÖUÜ";
+    const CONSONANTS = "BCÇDFGĞHJKLMNPRSŞTVYZ";
 
-    btnSelectMp3.addEventListener('click', () => inputMp3File.click());
-
-    inputMp3File.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const fileURL = URL.createObjectURL(file);
-        customPlayer.src = fileURL;
-        hasCustomMp3 = true;
-        mp3FileName.textContent = `Yüklendi: ${file.name}`;
-        mp3FileName.classList.add('text-emerald-400');
-      }
-    });
-
-    /* ==================== JENERİK SÖZLERİ ==================== */
     const JINGLE_LYRICS = [
       { time: 0, lyric: "Çark dönüyor, ışık yanıyor!", subtitle: "ŞOV BAŞLIYOR!" },
       { time: 3.5, lyric: "Kanalda şov başlıyor, büyük heyecan şimdi burada!", subtitle: "PIXIDUS ÇARKIFELEK" },
       { time: 8.0, lyric: "Herkes ekrana baksın, kazanmak senin elinde!", subtitle: "HAZIR OLUN" },
       { time: 12.0, lyric: "Harfleri seç, cevabı bul! Zirveye giden tek yol bu!", subtitle: "ÇARKIFELEK!" },
-      { time: 16.0, lyric: "Zafer bizi bekliyor! Hazır ol büyük ödül senin!", subtitle: "IŞIKLAR ALTINDA!" },
-      { time: 22.0, lyric: "Işıklar altında parlıyoruz!", subtitle: "BÜYÜK YARIŞMA" }
+      { time: 16.0, lyric: "Zafer bizi bekliyor! Hazır ol büyük ödül senin!", subtitle: "IŞIKLAR ALTINDA!" }
     ];
 
     const OFFLINE_WORDS = [
       { category: "TÜRK SİNEMASI", phrase: "HABABAM SINIFI", hint: "Efsanevi okul komedisi filmi" },
       { category: "TEKNOLOJİ", phrase: "YAPAY ZEKA VE DERİN ÖĞRENME", hint: "Geleceğin dijital beyin teknolojisi" },
       { category: "ATASÖZÜ", phrase: "DAMLAYA DAMLAYA GÖL OLUR", hint: "Küçük birikimlerin önemini anlatan söz" },
-      { category: "COĞRAFYA", phrase: "PERİ BACALARI CAPPADOCIA", hint: "Nevşehir'deki doğa harikası" },
+      { category: "COĞRAFYA", phrase: "PERİ BACALARI KAPADOKYA", hint: "Nevşehir'deki doğa harikası" },
       { category: "DEYİM", phrase: "EŞEĞİNİ SAĞLAM KAZIĞA BAĞLAMAK", hint: "İşini tedbirli yapmak" },
-      { category: "LEZZETLER", phrase: "GAZİANTEP BAKLAVASI", hint: "Antep fıstıklı meşhur tatlı" }
+      { category: "LEZZETLER", phrase: "GAZİANTEP BAKLAVASI", hint: "Antep fıstıklı meşhur tatlı" },
+      { category: "EDEBİYAT", phrase: "KÜRK MANTOLU MADONNA", hint: "Sabahattin Ali'nin ölümsüz eseri" },
+      { category: "UZAY & BİLİM", phrase: "SAMANYOLU GALAKSİSİ", hint: "Güneş sistemimizin içinde bulunduğu gökada" },
+      { category: "TARİH", phrase: "İSTANBULUN FETHİ", hint: "Çağ açıp çağ kapatan tarihi olay" },
+      { category: "SPOR", phrase: "FİLENİN SULTANLARI", hint: "Kadın voleybol milli takımımızın lakabı" }
     ];
 
     const WHEEL_SEGMENTS = [
-      { label: "100", type: "score", value: 100, color: "#ef4444" },
+      { label: "150", type: "score", value: 150, color: "#ef4444" },
       { label: "250", type: "score", value: 250, color: "#3b82f6" },
-      { label: "İFLAS", type: "bankrupt", value: 0, color: "#000000" },
+      { label: "İFLAS", type: "bankrupt", value: 0, color: "#090d16" },
       { label: "500", type: "score", value: 500, color: "#10b981" },
       { label: "PAS", type: "pass", value: 0, color: "#64748b" },
       { label: "750", type: "score", value: 750, color: "#8b5cf6" },
       { label: "1000", type: "score", value: 1000, color: "#f59e0b" },
-      { label: "JOKER", type: "joker", value: 0, color: "#ec4899" },
+      { label: "2X", type: "double", value: 0, color: "#ec4899" },
       { label: "300", type: "score", value: 300, color: "#06b6d4" },
       { label: "2000", type: "score", value: 2000, color: "#eab308" },
-      { label: "400", type: "score", value: 400, color: "#a855f7" },
-      { label: "İFLAS", type: "bankrupt", value: 0, color: "#000000" }
+      { label: "SÜRPRİZ", type: "mystery", value: 0, color: "#a855f7" },
+      { label: "İFLAS", type: "bankrupt", value: 0, color: "#090d16" }
     ];
+
+    let usedPhraseIndices = new Set();
 
     let gameState = {
       apiKey: "",
       sfx: true,
+      tts: true,
       players: [
         { name: "Siz", score: 0, total: 0, isAi: false },
         { name: "Pixi-AI", score: 0, total: 0, isAi: true }
@@ -392,9 +404,15 @@
       guessedLetters: new Set(),
       wheelValue: null,
       isSpinning: false,
-      canGuessLetter: false
+      guessMode: "none" // "none" | "consonant" | "vowel"
     };
 
+    /* ==================== TÜRKÇE BÜYÜK HARF YARDIMCISI ==================== */
+    function toTrUpper(str) {
+      return str.toLocaleUpperCase('tr-TR');
+    }
+
+    /* ==================== SES EFEKTLERİ VE SENTEZLEYİCİ ==================== */
     class SoundEffects {
       constructor() { this.ctx = null; }
       init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -402,87 +420,113 @@
         if (!gameState.sfx || !this.ctx) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.frequency.value = 600;
-        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+        osc.frequency.value = 620;
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
         osc.connect(gain); gain.connect(this.ctx.destination);
-        osc.start(); osc.stop(this.ctx.currentTime + 0.05);
+        osc.start(); osc.stop(this.ctx.currentTime + 0.04);
       }
       win() {
         if (!gameState.sfx || !this.ctx) return;
-        [400, 500, 600, 800].forEach((freq, idx) => {
+        [440, 554, 659, 880].forEach((freq, idx) => {
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
           osc.frequency.value = freq;
-          gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.1);
-          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.1 + 0.2);
+          gain.gain.setValueAtTime(0.15, this.ctx.currentTime + idx * 0.09);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.09 + 0.22);
           osc.connect(gain); gain.connect(this.ctx.destination);
-          osc.start(this.ctx.currentTime + idx * 0.1);
-          osc.stop(this.ctx.currentTime + idx * 0.1 + 0.2);
+          osc.start(this.ctx.currentTime + idx * 0.09);
+          osc.stop(this.ctx.currentTime + idx * 0.09 + 0.22);
+        });
+      }
+      bad() {
+        if (!gameState.sfx || !this.ctx) return;
+        [240, 170].forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime + idx * 0.18);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.18 + 0.25);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + idx * 0.18);
+          osc.stop(this.ctx.currentTime + idx * 0.18 + 0.25);
+        });
+      }
+      playSynthJingle() {
+        if (!gameState.sfx) return;
+        this.init();
+        const notes = [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5];
+        notes.forEach((n, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = n;
+          gain.gain.setValueAtTime(0.14, this.ctx.currentTime + i * 0.18);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.18 + 0.3);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + i * 0.18);
+          osc.stop(this.ctx.currentTime + i * 0.18 + 0.3);
         });
       }
     }
     const sfx = new SoundEffects();
 
-    // JENERİK BAŞLATMA
-    const introOverlay = document.getElementById('intro-overlay');
-    const introStartScreen = document.getElementById('intro-start-screen');
-    const introAnimScreen = document.getElementById('intro-animation-screen');
-    const btnStartShow = document.getElementById('btn-start-show');
-    const btnSkipIntro = document.getElementById('btn-skip-intro');
-    const introLyric = document.getElementById('intro-lyric');
-    const introSubtitle = document.getElementById('intro-subtitle');
-    const introProgress = document.getElementById('intro-progress');
-
+    /* ==================== MP3 & JENERİK YÖNETİMİ ==================== */
+    const customPlayer = document.getElementById('custom-mp3-player');
+    const inputMp3File = document.getElementById('input-mp3-file');
+    const btnSelectMp3 = document.getElementById('btn-select-mp3');
+    const mp3FileName = document.getElementById('mp3-file-name');
+    let hasCustomMp3 = false;
     let jingleInterval = null;
 
-    btnStartShow.addEventListener('click', () => {
+    btnSelectMp3.addEventListener('click', () => inputMp3File.click());
+    inputMp3File.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        customPlayer.src = URL.createObjectURL(file);
+        hasCustomMp3 = true;
+        mp3FileName.textContent = `Yüklendi: ${file.name}`;
+        mp3FileName.classList.add('text-emerald-400');
+      }
+    });
+
+    document.getElementById('btn-start-show').addEventListener('click', () => {
       sfx.init();
-      introStartScreen.classList.add('hidden');
-      introAnimScreen.classList.remove('hidden');
+      document.getElementById('intro-start-screen').classList.add('hidden');
+      document.getElementById('intro-animation-screen').classList.remove('hidden');
 
       if (hasCustomMp3) {
-        // Kullanıcının yüklediği MP3'ü çal
-        customPlayer.play().catch(err => console.log("Oynatma hatası:", err));
-        
+        customPlayer.play().catch(() => {});
         jingleInterval = setInterval(() => {
           const currentTime = customPlayer.currentTime;
-          const duration = customPlayer.duration || 25;
-          const percent = (currentTime / duration) * 100;
-
-          introProgress.style.width = Math.min(percent, 100) + '%';
-
-          let currentLyricObj = [...JINGLE_LYRICS].reverse().find(l => currentTime >= l.time);
+          const duration = customPlayer.duration || 20;
+          document.getElementById('intro-progress').style.width = Math.min((currentTime / duration) * 100, 100) + '%';
+          const currentLyricObj = [...JINGLE_LYRICS].reverse().find(l => currentTime >= l.time);
           if (currentLyricObj) {
-            introLyric.textContent = `"${currentLyricObj.lyric}"`;
-            introSubtitle.textContent = currentLyricObj.subtitle;
+            document.getElementById('intro-lyric').textContent = `"${currentLyricObj.lyric}"`;
+            document.getElementById('intro-subtitle').textContent = currentLyricObj.subtitle;
           }
         }, 100);
-
         customPlayer.onended = finishIntro;
       } else {
-        // Dosya seçilmediyse varsayılan süre sayacı çalışsın
+        sfx.playSynthJingle();
         let elapsed = 0;
-        let totalTime = 15;
+        const totalTime = 6;
         jingleInterval = setInterval(() => {
           elapsed += 0.1;
-          const percent = (elapsed / totalTime) * 100;
-          introProgress.style.width = Math.min(percent, 100) + '%';
-
-          let currentLyricObj = [...JINGLE_LYRICS].reverse().find(l => elapsed >= l.time);
+          document.getElementById('intro-progress').style.width = Math.min((elapsed / totalTime) * 100, 100) + '%';
+          const currentLyricObj = [...JINGLE_LYRICS].reverse().find(l => (elapsed * 3) >= l.time);
           if (currentLyricObj) {
-            introLyric.textContent = `"${currentLyricObj.lyric}"`;
-            introSubtitle.textContent = currentLyricObj.subtitle;
+            document.getElementById('intro-lyric').textContent = `"${currentLyricObj.lyric}"`;
+            document.getElementById('intro-subtitle').textContent = currentLyricObj.subtitle;
           }
-
-          if (elapsed >= totalTime) {
-            finishIntro();
-          }
+          if (elapsed >= totalTime) finishIntro();
         }, 100);
       }
     });
 
-    btnSkipIntro.addEventListener('click', finishIntro);
+    document.getElementById('btn-skip-intro').addEventListener('click', finishIntro);
 
     function finishIntro() {
       if (jingleInterval) clearInterval(jingleInterval);
@@ -490,6 +534,7 @@
         customPlayer.pause();
         customPlayer.currentTime = 0;
       }
+      const introOverlay = document.getElementById('intro-overlay');
       introOverlay.classList.add('opacity-0');
       setTimeout(() => {
         introOverlay.classList.add('hidden');
@@ -497,7 +542,37 @@
       }, 500);
     }
 
-    // ÇARK CANVAS
+    /* ==================== GEMINI API İLE DİNAMİK BULMACA ÜRETİMİ ==================== */
+    async function fetchPuzzleFromGemini() {
+      if (!gameState.apiKey) return null;
+      try {
+        const prompt = `Türkçe Çarkıfelek yarışması için 1 adet bulmaca üret. Sadece saf JSON döndür, markdown kullanma. Format: {"category": "KATEGORİ ADI", "phrase": "EN FAZLA 3 KELİMELİK TÜRKÇE İFADE", "hint": "Kısa ipucu cümlesi"}. Örnek kategoriler: Atasözleri, Yeşilçam, Bilim, Tarih, Gastronomi, Deyimler.`;
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${gameState.apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.9 }
+          })
+        });
+        const data = await res.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        const cleanJson = rawText.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(cleanJson);
+        if (parsed.category && parsed.phrase && parsed.hint) {
+          return {
+            category: toTrUpper(parsed.category),
+            phrase: toTrUpper(parsed.phrase).replace(/[^A-ZÇĞİÖŞÜ\s]/g, ''),
+            hint: parsed.hint
+          };
+        }
+      } catch (err) {
+        console.warn("Gemini API fallback devreye girdi:", err);
+      }
+      return null;
+    }
+
+    /* ==================== ÇARK ÇİZİM VE DÖNDÜRME ==================== */
     const canvas = document.getElementById('wheel-canvas');
     const ctx = canvas.getContext('2d');
     let currentRotation = 0;
@@ -526,29 +601,31 @@
         ctx.rotate(angle + arc / 2);
         ctx.textAlign = "right";
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 28px Outfit";
+        ctx.font = "bold 25px Outfit";
         ctx.shadowColor = "#000";
         ctx.shadowBlur = 4;
-        ctx.fillText(seg.label, radius - 30, 10);
+        ctx.fillText(seg.label, radius - 26, 9);
         ctx.restore();
       }
     }
 
     function spinWheel() {
-      if (gameState.isSpinning) return;
+      if (gameState.isSpinning || gameState.guessMode !== "none") return;
       gameState.isSpinning = true;
-      document.getElementById('btn-spin-wheel').disabled = true;
+      updateUI();
 
       const spins = 5 + Math.random() * 5;
-      const totalRadians = (spins * 360 + Math.random() * 360) * Math.PI / 180;
+      const startRotation = currentRotation;
+      const targetRotation = startRotation + (spins * 360 + Math.random() * 360) * Math.PI / 180;
       let start = null, lastSegmentIndex = -1;
 
       function animate(timestamp) {
         if (!start) start = timestamp;
-        const progress = (timestamp - start) / 4000;
+        const progress = (timestamp - start) / 3800;
 
         if (progress < 1) {
-          currentRotation = (1 - Math.pow(1 - progress, 3)) * totalRadians;
+          const easeOut = 1 - Math.pow(1 - progress, 3);
+          currentRotation = startRotation + easeOut * (targetRotation - startRotation);
           drawWheel();
 
           const numSegs = WHEEL_SEGMENTS.length;
@@ -569,51 +646,101 @@
     function handleWheelResult() {
       const numSegments = WHEEL_SEGMENTS.length;
       const arc = (2 * Math.PI) / numSegments;
-      let normalizedAngle = (3.5 * Math.PI - (currentRotation % (2 * Math.PI))) % (2 * Math.PI);
+      let normalizedAngle = (1.5 * Math.PI - (currentRotation % (2 * Math.PI)) + 4 * Math.PI) % (2 * Math.PI);
       const result = WHEEL_SEGMENTS[Math.floor(normalizedAngle / arc)];
       gameState.wheelValue = result;
 
-      const pName = gameState.players[gameState.activePlayerIndex].name;
+      const activePlayer = gameState.players[gameState.activePlayerIndex];
+      const pName = activePlayer.name;
+
       if (result.type === "score") {
-        setHostSpeech(`${pName}, çark ${result.value} puanda durdu! Harf seçin.`);
-        gameState.canGuessLetter = true;
+        setHostSpeech(`${pName}, çark ${result.value} puanda durdu! Bir sessiz harf seçin.`);
+        gameState.guessMode = "consonant";
       } else if (result.type === "bankrupt") {
-        setHostSpeech(`EYVAH! ${pName} İFLAS etti! Puanlar sıfırlandı.`);
-        gameState.players[gameState.activePlayerIndex].score = 0;
+        sfx.bad();
+        setHostSpeech(`EYVAH! ${pName} İFLAS etti! Tur puanı sıfırlandı.`);
+        activePlayer.score = 0;
         updateUI();
-        nextTurn();
+        setTimeout(nextTurn, 1200);
+        return;
       } else if (result.type === "pass") {
+        sfx.bad();
         setHostSpeech(`${pName} PAS geçti! Sıra diğer yarışmacıda.`);
-        nextTurn();
-      } else if (result.type === "joker") {
-        setHostSpeech(`HARİKA! ${pName} JOKER (+500 puan) kazandı!`);
-        gameState.players[gameState.activePlayerIndex].score += 500;
-        gameState.canGuessLetter = true;
+        setTimeout(nextTurn, 1200);
+        return;
+      } else if (result.type === "double") {
+        sfx.win();
+        activePlayer.score = activePlayer.score > 0 ? activePlayer.score * 2 : 500;
+        gameState.wheelValue = { type: "score", value: 400 };
+        setHostSpeech(`SÜPER! ${pName} puanını 2'ye katladı! Şimdi sessiz harf seçin.`);
+        gameState.guessMode = "consonant";
+      } else if (result.type === "mystery") {
+        const isLucky = Math.random() > 0.35;
+        if (isLucky) {
+          sfx.win();
+          activePlayer.score += 1000;
+          gameState.wheelValue = { type: "score", value: 500 };
+          setHostSpeech(`SÜRPRİZ KUTUDAN +1000 PUAN ÇIKTI! Sessiz harf seçin.`);
+          gameState.guessMode = "consonant";
+        } else {
+          sfx.bad();
+          activePlayer.score = 0;
+          setHostSpeech(`Sürpriz kutudan İFLAS çıktı! Sıra değişti.`);
+          updateUI();
+          setTimeout(nextTurn, 1200);
+          return;
+        }
       }
+
       updateUI();
 
-      if (gameState.players[gameState.activePlayerIndex].isAi && gameState.canGuessLetter) {
-        setTimeout(aiChooseLetter, 1500);
+      if (activePlayer.isAi && gameState.guessMode === "consonant") {
+        setTimeout(aiPlayTurn, 1500);
       }
     }
 
+    /* ==================== OYUN AKIŞI VE PANO ==================== */
     function initGame() {
       drawWheel();
       setupKeyboard();
       loadNewRound();
     }
 
-    function loadNewRound() {
-      const randomData = OFFLINE_WORDS[Math.floor(Math.random() * OFFLINE_WORDS.length)];
-      gameState.currentCategory = randomData.category;
-      gameState.currentPhrase = randomData.phrase.toUpperCase();
-      gameState.currentHint = randomData.hint;
+    async function loadNewRound() {
+      // Tur başı puanları sıfırla (Toplam puan korunur)
+      gameState.players.forEach(p => p.score = 0);
       gameState.guessedLetters.clear();
-      gameState.canGuessLetter = false;
+      gameState.guessMode = "none";
+      gameState.activePlayerIndex = (gameState.currentRound - 1) % gameState.players.length;
 
-      setHostSpeech(`Tur ${gameState.currentRound} başlıyor! Kategori: ${gameState.currentCategory}. Çarkı çevirin!`);
+      setHostSpeech(`Tur ${gameState.currentRound} hazırlanıyor...`);
+      updateUI();
+
+      let wordData = await fetchPuzzleFromGemini();
+
+      if (!wordData) {
+        if (usedPhraseIndices.size >= OFFLINE_WORDS.length) usedPhraseIndices.clear();
+        let idx;
+        do {
+          idx = Math.floor(Math.random() * OFFLINE_WORDS.length);
+        } while (usedPhraseIndices.has(idx));
+        usedPhraseIndices.add(idx);
+        wordData = OFFLINE_WORDS[idx];
+      }
+
+      gameState.currentCategory = wordData.category;
+      gameState.currentPhrase = wordData.phrase;
+      gameState.currentHint = wordData.hint;
+
       renderBoard();
       updateUI();
+
+      const starter = gameState.players[gameState.activePlayerIndex];
+      setHostSpeech(`Tur ${gameState.currentRound} başladı! Kategori: ${gameState.currentCategory}. Sıra ${starter.name} yarışmacısında!`);
+
+      if (starter.isAi) {
+        setTimeout(spinWheel, 1600);
+      }
     }
 
     function renderBoard() {
@@ -626,7 +753,7 @@
 
         for (let char of word) {
           const tile = document.createElement('div');
-          tile.className = "tile-flip w-10 h-12 sm:w-12 sm:h-14";
+          tile.className = "tile-flip w-9 h-11 sm:w-11 sm:h-13";
           const isRevealed = gameState.guessedLetters.has(char) || !/[A-ZÇĞİÖŞÜ]/i.test(char);
 
           tile.innerHTML = `
@@ -634,7 +761,7 @@
               <div class="tile-front absolute inset-0 bg-purple-900 border-2 border-purple-500 rounded-lg flex items-center justify-center shadow-inner">
                 <span class="text-purple-400 text-xs">★</span>
               </div>
-              <div class="tile-back absolute inset-0 bg-amber-400 border-2 border-amber-200 rounded-lg flex items-center justify-center font-black text-slate-950 text-xl sm:text-2xl shadow-lg">
+              <div class="tile-back absolute inset-0 bg-amber-400 border-2 border-amber-200 rounded-lg flex items-center justify-center font-black text-slate-950 text-lg sm:text-2xl shadow-lg">
                 ${char}
               </div>
             </div>
@@ -652,17 +779,26 @@
       const kb = document.getElementById('keyboard-container');
       kb.innerHTML = '';
       "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".split("").forEach(char => {
+        const isVowel = VOWELS.includes(char);
         const btn = document.createElement('button');
         btn.id = `key-${char}`;
         btn.textContent = char;
-        btn.className = "py-2 bg-slate-800 hover:bg-purple-600 border border-slate-700 text-white font-bold rounded-lg text-sm transition active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer";
+        btn.className = `py-2 border font-bold rounded-lg text-sm transition active:scale-95 disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer ${
+          isVowel 
+            ? 'bg-indigo-950/80 hover:bg-indigo-600 border-indigo-700 text-indigo-200' 
+            : 'bg-slate-800 hover:bg-purple-600 border-slate-700 text-white'
+        }`;
         btn.addEventListener('click', () => handleLetterGuess(char));
         kb.appendChild(btn);
       });
     }
 
     function handleLetterGuess(char) {
-      if (gameState.guessedLetters.has(char) || !gameState.canGuessLetter) return;
+      if (gameState.guessedLetters.has(char) || gameState.guessMode === "none") return;
+
+      const isVowel = VOWELS.includes(char);
+      if (gameState.guessMode === "consonant" && isVowel) return;
+      if (gameState.guessMode === "vowel" && !isVowel) return;
 
       gameState.guessedLetters.add(char);
       const count = (gameState.currentPhrase.match(new RegExp(char, "g")) || []).length;
@@ -670,62 +806,143 @@
 
       if (count > 0) {
         sfx.win();
-        const gained = (gameState.wheelValue?.value || 250) * count;
-        activePlayer.score += gained;
-        setHostSpeech(`TEBRİKLER! ${count} adet '${char}' var! +${gained} puan!`);
+        if (gameState.guessMode === "consonant") {
+          const gained = (gameState.wheelValue?.value || 250) * count;
+          activePlayer.score += gained;
+          setHostSpeech(`HARİKA! ${count} adet '${char}' var! +${gained} puan! Çarkı tekrar çevirebilir veya tahmin edebilirsiniz.`);
+        } else {
+          setHostSpeech(`DOĞRU! Panoda ${count} adet '${char}' açıldı! Sıra hala ${activePlayer.name} yarışmacısında.`);
+        }
+        gameState.guessMode = "none";
         renderBoard();
-        checkBoardSolved();
+        updateUI();
+
+        if (!checkBoardSolved() && activePlayer.isAi) {
+          setTimeout(aiDecideNextMove, 1500);
+        }
       } else {
+        sfx.bad();
         setHostSpeech(`Maalesef '${char}' harfi yok. Sıra diğer yarışmacıda.`);
+        gameState.guessMode = "none";
         renderBoard();
-        nextTurn();
+        updateUI();
+        setTimeout(nextTurn, 1200);
       }
-      gameState.canGuessLetter = false;
-      updateUI();
     }
 
     function checkBoardSolved() {
       const allLetters = gameState.currentPhrase.replace(/\s+/g, '').split("");
       if (allLetters.every(char => gameState.guessedLetters.has(char))) {
-        setTimeout(roundWon, 800);
+        setTimeout(roundWon, 700);
+        return true;
       }
+      return false;
     }
 
     function roundWon() {
+      // Kalan tüm harfleri aç
+      gameState.currentPhrase.replace(/\s+/g, '').split("").forEach(c => gameState.guessedLetters.add(c));
+      renderBoard();
+
       const activePlayer = gameState.players[gameState.activePlayerIndex];
-      activePlayer.total += activePlayer.score;
+      const roundBonus = Math.max(activePlayer.score, 500); // En az 500 tur ödülü
+      activePlayer.total += roundBonus;
+
       sfx.win();
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-      setHostSpeech(`TEBRİKLER! ${activePlayer.name} turu kazandı!`);
+      confetti({ particleCount: 110, spread: 75, origin: { y: 0.6 } });
+      setHostSpeech(`TEBRİKLER! ${activePlayer.name} turu bildi ve kasasına +${roundBonus} puan ekledi!`);
+      updateUI();
 
       setTimeout(() => {
         if (gameState.currentRound < gameState.maxRounds) {
           gameState.currentRound++;
           loadNewRound();
         } else {
-          setHostSpeech("OYUN BİTTİ! KAZANAN: " + gameState.players.reduce((a, b) => a.total > b.total ? a : b).name);
+          showGameOver();
         }
-      }, 3000);
+      }, 3200);
+    }
+
+    function showGameOver() {
+      const sorted = [...gameState.players].sort((a, b) => b.total - a.total);
+      const winner = sorted[0];
+      const isTie = sorted[0].total === sorted[1].total;
+
+      document.getElementById('winner-title').textContent = isTie ? "BERABERE BİTTİ!" : `ŞAMPİYON: ${toTrUpper(winner.name)}!`;
+      setHostSpeech(isTie ? "İnanılmaz bir final! Yarışma berabere sona erdi!" : `Muhteşem bir yarışmaydı! Şampiyon ${winner.name}!`);
+
+      const sb = document.getElementById('final-scoreboard');
+      sb.innerHTML = sorted.map((p, i) => `
+        <div class="flex items-center justify-between py-2 ${i === 0 ? 'text-amber-400 font-black' : 'text-slate-300 font-semibold'}">
+          <span>${i + 1}. ${p.name}</span>
+          <span>${p.total} PUAN</span>
+        </div>
+      `).join('');
+
+      confetti({ particleCount: 180, spread: 100, origin: { y: 0.5 } });
+      document.getElementById('modal-gameover').classList.remove('hidden');
     }
 
     function nextTurn() {
-      gameState.canGuessLetter = false;
+      gameState.guessMode = "none";
       gameState.activePlayerIndex = (gameState.activePlayerIndex + 1) % gameState.players.length;
       updateUI();
 
-      if (gameState.players[gameState.activePlayerIndex].isAi) {
-        setHostSpeech(`Sıra yapay zekada (${gameState.players[gameState.activePlayerIndex].name}). Çark çevriliyor...`);
-        setTimeout(spinWheel, 1500);
+      const currentPlayer = gameState.players[gameState.activePlayerIndex];
+      if (currentPlayer.isAi) {
+        setHostSpeech(`Sıra yapay zeka yarışmacımız ${currentPlayer.name}'da. Çark çevriliyor...`);
+        setTimeout(spinWheel, 1400);
+      } else {
+        setHostSpeech(`Sıra sizde ${currentPlayer.name}! Çarkı çevirin.`);
       }
     }
 
-    function aiChooseLetter() {
-      const available = "BCÇDFGĞHJKLMNPRSŞTVYZ".split("").filter(l => !gameState.guessedLetters.has(l));
+    /* ==================== AKILLI YAPAY ZEKA HAMLELERİ ==================== */
+    function aiDecideNextMove() {
+      const aiPlayer = gameState.players[gameState.activePlayerIndex];
+      if (!aiPlayer.isAi) return;
+
+      const phraseLetters = gameState.currentPhrase.replace(/\s+/g, '').split("");
+      const revealedCount = phraseLetters.filter(c => gameState.guessedLetters.has(c)).length;
+      const ratio = revealedCount / phraseLetters.length;
+
+      // Panonun %75'inden fazlası açıldıysa AI cevabı tahmin edip turu bitirir
+      if (ratio >= 0.75) {
+        setHostSpeech(`${aiPlayer.name} cevabı bulduğunu söylüyor: "${gameState.currentPhrase}"!`);
+        setTimeout(roundWon, 1500);
+        return;
+      }
+
+      // Kalan sesli harf varsa ve puanı yeterliyse %40 ihtimalle sesli harf satın alır
+      const availableVowels = VOWELS.split("").filter(v => !gameState.guessedLetters.has(v));
+      if (aiPlayer.score >= 250 && availableVowels.length > 0 && Math.random() < 0.4) {
+        aiPlayer.score -= 250;
+        gameState.guessMode = "vowel";
+        updateUI();
+        const chosenVowel = availableVowels[Math.floor(Math.random() * availableVowels.length)];
+        setHostSpeech(`${aiPlayer.name} 250 puan vererek '${chosenVowel}' sesli harfini satın aldı!`);
+        setTimeout(() => handleLetterGuess(chosenVowel), 1200);
+        return;
+      }
+
+      // Aksi halde çarkı tekrar çevirir
+      setHostSpeech(`${aiPlayer.name} çarkı tekrar çeviriyor...`);
+      setTimeout(spinWheel, 1300);
+    }
+
+    function aiPlayTurn() {
+      // Türkçe'de en sık kullanılan sessiz harfler öncelikli
+      const priorityConsonants = "NRLKMTSYDZBÇGŞVPHCĞFJ";
+      const available = priorityConsonants.split("").filter(l => !gameState.guessedLetters.has(l));
       if (available.length > 0) {
-        handleLetterGuess(available[Math.floor(Math.random() * available.length)]);
+        // İlk 6 popüler harf arasından ağırlıklı seçim yap
+        const pool = available.slice(0, Math.min(6, available.length));
+        const chosen = pool[Math.floor(Math.random() * pool.length)];
+        handleLetterGuess(chosen);
       }
     }
 
+    /* ==================== ARAYÜZ GÜNCELLEME & SESLİ OKUMA ==================== */
     function updateUI() {
       const container = document.getElementById('player-cards-container');
       container.innerHTML = '';
@@ -738,7 +955,7 @@
             <div class="w-8 h-8 rounded-full ${isActive ? 'bg-amber-400 text-slate-950 font-black' : 'bg-slate-700 text-slate-300'} flex items-center justify-center text-xs">${idx + 1}</div>
             <div>
               <p class="font-bold text-sm ${isActive ? 'text-amber-300' : 'text-slate-300'}">${p.name}</p>
-              <p class="text-[11px] text-slate-400">Tur: ${p.score} p</p>
+              <p class="text-[11px] text-slate-400">Tur Kasası: ${p.score} p</p>
             </div>
           </div>
           <div class="text-right">
@@ -749,55 +966,135 @@
         container.appendChild(card);
       });
 
+      const activePlayer = gameState.players[gameState.activePlayerIndex];
+      const isHumanTurn = !activePlayer.isAi;
+
+      // Klavye tuşlarını aktif/pasif yap
       document.querySelectorAll('#keyboard-container button').forEach(btn => {
-        btn.disabled = gameState.guessedLetters.has(btn.textContent) || !gameState.canGuessLetter;
+        const char = btn.textContent;
+        const isVowel = VOWELS.includes(char);
+        const alreadyGuessed = gameState.guessedLetters.has(char);
+
+        if (!isHumanTurn || alreadyGuessed || gameState.guessMode === "none") {
+          btn.disabled = true;
+        } else if (gameState.guessMode === "consonant") {
+          btn.disabled = isVowel;
+        } else if (gameState.guessMode === "vowel") {
+          btn.disabled = !isVowel;
+        }
       });
 
-      document.getElementById('btn-spin-wheel').disabled = gameState.isSpinning || gameState.canGuessLetter;
-      document.getElementById('btn-buy-vowel').disabled = !gameState.canGuessLetter || gameState.players[gameState.activePlayerIndex].score < 250;
+      document.getElementById('btn-spin-wheel').disabled = !isHumanTurn || gameState.isSpinning || gameState.guessMode !== "none";
+      const remainingVowels = VOWELS.split("").some(v => !gameState.guessedLetters.has(v));
+      document.getElementById('btn-buy-vowel').disabled = !isHumanTurn || gameState.isSpinning || gameState.guessMode !== "none" || activePlayer.score < 250 || !remainingVowels;
+      document.getElementById('btn-solve-phrase').disabled = !isHumanTurn || gameState.isSpinning;
       document.getElementById('game-round-tag').textContent = `Tur ${gameState.currentRound}/${gameState.maxRounds}`;
     }
 
     function setHostSpeech(msg) {
       document.getElementById('host-speech').textContent = `"${msg}"`;
+      if (gameState.tts && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(msg);
+        utterance.lang = 'tr-TR';
+        utterance.rate = 1.08;
+        window.speechSynthesis.speak(utterance);
+      }
     }
 
+    /* ==================== OLAY DİNLEYİCİLERİ ==================== */
     document.getElementById('btn-spin-wheel').addEventListener('click', spinWheel);
+
+    document.getElementById('btn-toggle-tts').addEventListener('click', (e) => {
+      gameState.tts = !gameState.tts;
+      document.getElementById('chk-tts').checked = gameState.tts;
+      e.currentTarget.classList.toggle('text-emerald-400', gameState.tts);
+      e.currentTarget.classList.toggle('text-slate-500', !gameState.tts);
+      if (!gameState.tts) window.speechSynthesis.cancel();
+    });
 
     document.getElementById('btn-replay-jingle').addEventListener('click', () => {
       if (hasCustomMp3) {
         if (customPlayer.paused) customPlayer.play();
         else customPlayer.pause();
+      } else {
+        sfx.playSynthJingle();
       }
     });
 
     document.getElementById('btn-buy-vowel').addEventListener('click', () => {
       const p = gameState.players[gameState.activePlayerIndex];
-      if (p.score >= 250 && gameState.canGuessLetter) {
+      if (!p.isAi && p.score >= 250 && gameState.guessMode === "none") {
         p.score -= 250;
-        setHostSpeech("Sesli harf hakkı alındı! Bir sesli harf seçin.");
-        document.querySelectorAll('#keyboard-container button').forEach(btn => {
-          btn.disabled = !"AEIİOÖUÜ".includes(btn.textContent) || gameState.guessedLetters.has(btn.textContent);
-        });
+        gameState.guessMode = "vowel";
+        setHostSpeech("Sesli harf hakkı satın alındı! Klavyeden bir sesli harf seçin.");
+        updateUI();
       }
     });
 
-    document.getElementById('btn-solve-phrase').addEventListener('click', () => document.getElementById('modal-solve').classList.remove('hidden'));
+    document.getElementById('btn-solve-phrase').addEventListener('click', () => {
+      document.getElementById('modal-solve').classList.remove('hidden');
+      document.getElementById('input-solve-phrase').focus();
+    });
     document.getElementById('btn-cancel-solve').addEventListener('click', () => document.getElementById('modal-solve').classList.add('hidden'));
     document.getElementById('btn-confirm-solve').addEventListener('click', () => {
-      const guess = document.getElementById('input-solve-phrase').value.trim().toUpperCase();
+      const guess = toTrUpper(document.getElementById('input-solve-phrase').value.trim());
       document.getElementById('modal-solve').classList.add('hidden');
       document.getElementById('input-solve-phrase').value = '';
-      if (guess === gameState.currentPhrase) roundWon();
-      else { setHostSpeech("Yanlış tahmin! Sıra değişti."); nextTurn(); }
+      if (!guess) return;
+
+      if (guess === gameState.currentPhrase) {
+        roundWon();
+      } else {
+        sfx.bad();
+        setHostSpeech(`"${guess}" maalesef yanlış tahmin! Sıra değişti.`);
+        nextTurn();
+      }
+    });
+
+    // Fiziksel klavye desteği
+    window.addEventListener('keydown', (e) => {
+      if (!document.getElementById('modal-solve').classList.contains('hidden')) {
+        if (e.key === 'Enter') document.getElementById('btn-confirm-solve').click();
+        return;
+      }
+      if (!document.getElementById('modal-settings').classList.contains('hidden')) return;
+
+      const key = toTrUpper(e.key);
+      if ("ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".includes(key) && key.length === 1) {
+        handleLetterGuess(key);
+      }
     });
 
     document.getElementById('btn-open-settings').addEventListener('click', () => document.getElementById('modal-settings').classList.remove('hidden'));
     document.getElementById('btn-close-settings').addEventListener('click', () => document.getElementById('modal-settings').classList.add('hidden'));
     document.getElementById('btn-save-settings').addEventListener('click', () => {
-      gameState.apiKey = document.getElementById('input-api-key').value;
+      gameState.apiKey = document.getElementById('input-api-key').value.trim();
       gameState.sfx = document.getElementById('chk-sfx').checked;
+      gameState.tts = document.getElementById('chk-tts').checked;
+      gameState.maxRounds = parseInt(document.getElementById('select-max-rounds').value, 10);
+
+      const customName = document.getElementById('input-player-name').value.trim();
+      if (customName) gameState.players[0].name = customName;
+
+      const aiBadge = document.getElementById('ai-mode-badge');
+      if (gameState.apiKey) {
+        aiBadge.innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> Gemini AI Aktif`;
+        aiBadge.className = "hidden sm:inline-flex items-center gap-1 text-xs bg-amber-500/10 text-amber-300 px-3 py-1.5 rounded-xl border border-amber-500/40";
+      } else {
+        aiBadge.innerHTML = `<i data-lucide="cpu" class="w-3.5 h-3.5"></i> Yerel Mod`;
+        aiBadge.className = "hidden sm:inline-flex items-center gap-1 text-xs bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl border border-slate-700";
+      }
+      lucide.createIcons();
+      updateUI();
       document.getElementById('modal-settings').classList.add('hidden');
+    });
+
+    document.getElementById('btn-restart-game').addEventListener('click', () => {
+      document.getElementById('modal-gameover').classList.add('hidden');
+      gameState.currentRound = 1;
+      gameState.players.forEach(p => { p.score = 0; p.total = 0; });
+      loadNewRound();
     });
 
     window.addEventListener('DOMContentLoaded', () => {

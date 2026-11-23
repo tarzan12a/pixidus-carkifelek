@@ -308,10 +308,29 @@
             </select>
           </div>
         </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">AI Sağlayıcısı</label>
+            <select id="select-ai-provider" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+              <option value="gemini" selected>Google Gemini</option>
+              <option value="grok">xAI Grok</option>
+            </select>
+          </div>
+          <div id="grok-model-wrapper" class="hidden">
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Grok Modeli</label>
+            <select id="select-grok-model" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
+              <option value="grok-3-mini" selected>grok-3-mini</option>
+              <option value="grok-3">grok-3</option>
+            </select>
+          </div>
+        </div>
+
         <div>
-          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Gemini API Key (Dinamik Soru Üretimi İçin)</label>
+          <label id="label-api-key" class="block text-xs font-bold text-slate-400 uppercase mb-1">Gemini API Key (Dinamik Soru Üretimi İçin)</label>
           <input type="password" id="input-api-key" placeholder="AIzaSy... (Boş bırakılırsa yerel havuz kullanılır)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
         </div>
+
         <div class="flex items-center justify-between pt-2 border-t border-slate-800">
           <span class="text-sm font-semibold text-slate-300">Ses Efektleri</span>
           <input type="checkbox" id="chk-sfx" checked class="w-5 h-5 accent-amber-500 cursor-pointer">
@@ -388,6 +407,8 @@
     let usedPhraseIndices = new Set();
 
     let gameState = {
+      aiProvider: "gemini", // "gemini" | "grok"
+      grokModel: "grok-3-mini",
       apiKey: "",
       sfx: true,
       tts: true,
@@ -410,6 +431,17 @@
     /* ==================== TÜRKÇE BÜYÜK HARF YARDIMCISI ==================== */
     function toTrUpper(str) {
       return str.toLocaleUpperCase('tr-TR');
+    }
+
+    function sanitizePuzzle(parsed) {
+      if (!parsed || !parsed.category || !parsed.phrase || !parsed.hint) return null;
+      const cleanPhrase = toTrUpper(String(parsed.phrase)).replace(/[^A-ZÇĞİÖŞÜ\s]/g, '').replace(/\s+/g, ' ').trim();
+      if (!cleanPhrase || cleanPhrase.length < 3) return null;
+      return {
+        category: toTrUpper(String(parsed.category)).trim(),
+        phrase: cleanPhrase,
+        hint: String(parsed.hint).trim()
+      };
     }
 
     /* ==================== SES EFEKTLERİ VE SENTEZLEYİCİ ==================== */
@@ -542,34 +574,66 @@
       }, 500);
     }
 
-    /* ==================== GEMINI API İLE DİNAMİK BULMACA ÜRETİMİ ==================== */
+    /* ==================== GEMINI & GROK API İLE DİNAMİK BULMACA ÜRETİMİ ==================== */
+    const PUZZLE_PROMPT = `Türkçe Çarkıfelek yarışması için 1 adet bulmaca üret. Sadece saf JSON döndür, markdown kullanma. Format: {"category": "KATEGORİ ADI", "phrase": "EN FAZLA 3 KELİMELİK TÜRKÇE İFADE", "hint": "Kısa ipucu cümlesi"}. Örnek kategoriler: Atasözleri, Yeşilçam, Bilim, Tarih, Gastronomi, Deyimler.`;
+
     async function fetchPuzzleFromGemini() {
       if (!gameState.apiKey) return null;
       try {
-        const prompt = `Türkçe Çarkıfelek yarışması için 1 adet bulmaca üret. Sadece saf JSON döndür, markdown kullanma. Format: {"category": "KATEGORİ ADI", "phrase": "EN FAZLA 3 KELİMELİK TÜRKÇE İFADE", "hint": "Kısa ipucu cümlesi"}. Örnek kategoriler: Atasözleri, Yeşilçam, Bilim, Tarih, Gastronomi, Deyimler.`;
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${gameState.apiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(gameState.apiKey)}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
+            contents: [{ parts: [{ text: PUZZLE_PROMPT }] }],
             generationConfig: { temperature: 0.9 }
           })
         });
+        if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`);
         const data = await res.json();
         const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
         const cleanJson = rawText.replace(/```json|```/g, '').trim();
-        const parsed = JSON.parse(cleanJson);
-        if (parsed.category && parsed.phrase && parsed.hint) {
-          return {
-            category: toTrUpper(parsed.category),
-            phrase: toTrUpper(parsed.phrase).replace(/[^A-ZÇĞİÖŞÜ\s]/g, ''),
-            hint: parsed.hint
-          };
-        }
+        return sanitizePuzzle(JSON.parse(cleanJson));
       } catch (err) {
         console.warn("Gemini API fallback devreye girdi:", err);
       }
       return null;
+    }
+
+    async function fetchPuzzleFromGrok() {
+      if (!gameState.apiKey) return null;
+      try {
+        const res = await fetch('https://api.x.ai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${gameState.apiKey}`
+          },
+          body: JSON.stringify({
+            model: gameState.grokModel || 'grok-3-mini',
+            messages: [
+              { role: 'system', content: 'Yalnızca geçerli JSON nesnesi döndüren bir bulmaca üreticisisin.' },
+              { role: 'user', content: PUZZLE_PROMPT }
+            ],
+            temperature: 0.9
+          })
+        });
+        if (!res.ok) throw new Error(`Grok HTTP ${res.status}`);
+        const data = await res.json();
+        const rawText = data.choices?.[0]?.message?.content || "";
+        const cleanJson = rawText.replace(/```json|```/g, '').trim();
+        return sanitizePuzzle(JSON.parse(cleanJson));
+      } catch (err) {
+        console.warn("Grok API fallback devreye girdi:", err);
+      }
+      return null;
+    }
+
+    async function fetchPuzzleFromAI() {
+      if (!gameState.apiKey) return null;
+      if (gameState.aiProvider === 'grok') {
+        return await fetchPuzzleFromGrok();
+      }
+      return await fetchPuzzleFromGemini();
     }
 
     /* ==================== ÇARK ÇİZİM VE DÖNDÜRME ==================== */
@@ -707,7 +771,6 @@
     }
 
     async function loadNewRound() {
-      // Tur başı puanları sıfırla (Toplam puan korunur)
       gameState.players.forEach(p => p.score = 0);
       gameState.guessedLetters.clear();
       gameState.guessMode = "none";
@@ -716,7 +779,7 @@
       setHostSpeech(`Tur ${gameState.currentRound} hazırlanıyor...`);
       updateUI();
 
-      let wordData = await fetchPuzzleFromGemini();
+      let wordData = await fetchPuzzleFromAI();
 
       if (!wordData) {
         if (usedPhraseIndices.size >= OFFLINE_WORDS.length) usedPhraseIndices.clear();
@@ -840,12 +903,11 @@
     }
 
     function roundWon() {
-      // Kalan tüm harfleri aç
       gameState.currentPhrase.replace(/\s+/g, '').split("").forEach(c => gameState.guessedLetters.add(c));
       renderBoard();
 
       const activePlayer = gameState.players[gameState.activePlayerIndex];
-      const roundBonus = Math.max(activePlayer.score, 500); // En az 500 tur ödülü
+      const roundBonus = Math.max(activePlayer.score, 500);
       activePlayer.total += roundBonus;
 
       sfx.win();
@@ -906,14 +968,12 @@
       const revealedCount = phraseLetters.filter(c => gameState.guessedLetters.has(c)).length;
       const ratio = revealedCount / phraseLetters.length;
 
-      // Panonun %75'inden fazlası açıldıysa AI cevabı tahmin edip turu bitirir
       if (ratio >= 0.75) {
         setHostSpeech(`${aiPlayer.name} cevabı bulduğunu söylüyor: "${gameState.currentPhrase}"!`);
         setTimeout(roundWon, 1500);
         return;
       }
 
-      // Kalan sesli harf varsa ve puanı yeterliyse %40 ihtimalle sesli harf satın alır
       const availableVowels = VOWELS.split("").filter(v => !gameState.guessedLetters.has(v));
       if (aiPlayer.score >= 250 && availableVowels.length > 0 && Math.random() < 0.4) {
         aiPlayer.score -= 250;
@@ -925,17 +985,14 @@
         return;
       }
 
-      // Aksi halde çarkı tekrar çevirir
       setHostSpeech(`${aiPlayer.name} çarkı tekrar çeviriyor...`);
       setTimeout(spinWheel, 1300);
     }
 
     function aiPlayTurn() {
-      // Türkçe'de en sık kullanılan sessiz harfler öncelikli
       const priorityConsonants = "NRLKMTSYDZBÇGŞVPHCĞFJ";
       const available = priorityConsonants.split("").filter(l => !gameState.guessedLetters.has(l));
       if (available.length > 0) {
-        // İlk 6 popüler harf arasından ağırlıklı seçim yap
         const pool = available.slice(0, Math.min(6, available.length));
         const chosen = pool[Math.floor(Math.random() * pool.length)];
         handleLetterGuess(chosen);
@@ -943,6 +1000,38 @@
     }
 
     /* ==================== ARAYÜZ GÜNCELLEME & SESLİ OKUMA ==================== */
+    function updateAiBadge() {
+      const aiBadge = document.getElementById('ai-mode-badge');
+      if (!gameState.apiKey) {
+        aiBadge.innerHTML = `<i data-lucide="cpu" class="w-3.5 h-3.5"></i> Yerel Mod`;
+        aiBadge.className = "hidden sm:inline-flex items-center gap-1 text-xs bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl border border-slate-700";
+      } else if (gameState.aiProvider === 'grok') {
+        aiBadge.innerHTML = `<i data-lucide="zap" class="w-3.5 h-3.5 text-pink-400"></i> Grok AI Aktif`;
+        aiBadge.className = "hidden sm:inline-flex items-center gap-1 text-xs bg-pink-500/10 text-pink-300 px-3 py-1.5 rounded-xl border border-pink-500/40";
+      } else {
+        aiBadge.innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> Gemini AI Aktif`;
+        aiBadge.className = "hidden sm:inline-flex items-center gap-1 text-xs bg-amber-500/10 text-amber-300 px-3 py-1.5 rounded-xl border border-amber-500/40";
+      }
+      lucide.createIcons();
+    }
+
+    function updateProviderFormUI() {
+      const provider = document.getElementById('select-ai-provider').value;
+      const grokModelWrapper = document.getElementById('grok-model-wrapper');
+      const labelApiKey = document.getElementById('label-api-key');
+      const inputApiKey = document.getElementById('input-api-key');
+
+      if (provider === 'grok') {
+        grokModelWrapper.classList.remove('hidden');
+        labelApiKey.textContent = "xAI Grok API Key (Dinamik Soru Üretimi İçin)";
+        inputApiKey.placeholder = "xai-... (Boş bırakılırsa yerel havuz kullanılır)";
+      } else {
+        grokModelWrapper.classList.add('hidden');
+        labelApiKey.textContent = "Gemini API Key (Dinamik Soru Üretimi İçin)";
+        inputApiKey.placeholder = "AIzaSy... (Boş bırakılırsa yerel havuz kullanılır)";
+      }
+    }
+
     function updateUI() {
       const container = document.getElementById('player-cards-container');
       container.innerHTML = '';
@@ -969,7 +1058,6 @@
       const activePlayer = gameState.players[gameState.activePlayerIndex];
       const isHumanTurn = !activePlayer.isAi;
 
-      // Klavye tuşlarını aktif/pasif yap
       document.querySelectorAll('#keyboard-container button').forEach(btn => {
         const char = btn.textContent;
         const isVowel = VOWELS.includes(char);
@@ -1052,7 +1140,6 @@
       }
     });
 
-    // Fiziksel klavye desteği
     window.addEventListener('keydown', (e) => {
       if (!document.getElementById('modal-solve').classList.contains('hidden')) {
         if (e.key === 'Enter') document.getElementById('btn-confirm-solve').click();
@@ -1066,9 +1153,16 @@
       }
     });
 
-    document.getElementById('btn-open-settings').addEventListener('click', () => document.getElementById('modal-settings').classList.remove('hidden'));
+    document.getElementById('select-ai-provider').addEventListener('change', updateProviderFormUI);
+
+    document.getElementById('btn-open-settings').addEventListener('click', () => {
+      updateProviderFormUI();
+      document.getElementById('modal-settings').classList.remove('hidden');
+    });
     document.getElementById('btn-close-settings').addEventListener('click', () => document.getElementById('modal-settings').classList.add('hidden'));
     document.getElementById('btn-save-settings').addEventListener('click', () => {
+      gameState.aiProvider = document.getElementById('select-ai-provider').value;
+      gameState.grokModel = document.getElementById('select-grok-model').value;
       gameState.apiKey = document.getElementById('input-api-key').value.trim();
       gameState.sfx = document.getElementById('chk-sfx').checked;
       gameState.tts = document.getElementById('chk-tts').checked;
@@ -1077,15 +1171,7 @@
       const customName = document.getElementById('input-player-name').value.trim();
       if (customName) gameState.players[0].name = customName;
 
-      const aiBadge = document.getElementById('ai-mode-badge');
-      if (gameState.apiKey) {
-        aiBadge.innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i> Gemini AI Aktif`;
-        aiBadge.className = "hidden sm:inline-flex items-center gap-1 text-xs bg-amber-500/10 text-amber-300 px-3 py-1.5 rounded-xl border border-amber-500/40";
-      } else {
-        aiBadge.innerHTML = `<i data-lucide="cpu" class="w-3.5 h-3.5"></i> Yerel Mod`;
-        aiBadge.className = "hidden sm:inline-flex items-center gap-1 text-xs bg-slate-800 text-slate-400 px-3 py-1.5 rounded-xl border border-slate-700";
-      }
-      lucide.createIcons();
+      updateAiBadge();
       updateUI();
       document.getElementById('modal-settings').classList.add('hidden');
     });
@@ -1099,6 +1185,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
+      updateAiBadge();
       drawWheel();
     });
   </script>
